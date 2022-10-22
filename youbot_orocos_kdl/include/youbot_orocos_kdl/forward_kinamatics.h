@@ -4,8 +4,9 @@
 #define FK_H
 
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/JointState.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -24,6 +25,10 @@ public:
     void treeFromUrdf();
     void chainFromDHParams();
 
+    void publishJointAngles(std::vector<double> joint_angles);
+
+    void publishPose(double x, double y, double z);
+
     ros::NodeHandle nh_;
 
     std::string robot_desc_string;
@@ -34,6 +39,14 @@ public:
 
     // double vector of multiple joint angles
     std::vector<std::vector<double> > joint_angles_vector;
+
+    ros::Publisher string_pub;
+
+    // joint state publisher
+    ros::Publisher joint_state_pub; 
+
+    // cartesian pose publisher
+    ros::Publisher cartesian_pose_pub;
 
 };    
 

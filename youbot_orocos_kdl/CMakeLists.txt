@@ -11,6 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   youbot_description
+  kdl_conversions
+  eigen_conversions
+  kdl_parser
 )
 
 find_package(orocos_kdl REQUIRED)
@@ -19,8 +22,13 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES youbot_orocos_kdl
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS
+    kdl_parser
+    roscpp
+    rospy
+    std_msgs
+    kdl_conversions
+  DEPENDS EIGEN3 orocos_kdl
 )
 
 ## Build ##
@@ -29,6 +37,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
+  ${orocos_kdl_INCLUDE_DIRS}
 )
 
 add_executable(forward_kinematics
@@ -39,6 +48,8 @@ add_dependencies(forward_kinematics ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(forward_kinematics
   ${catkin_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+  ${orocos_kdl_LIBRARIES}
 )
 
 ## Install ##

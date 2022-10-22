@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find youbot_description)/urdf/youbot_arm/arm.urdf.xacro" />
-
-  <!-- <rosparam command="load" ns="arm_1" file="$(find mir_hardware_config)/$(arg robot)/config/arm.yaml"/> -->
-
-</launch>

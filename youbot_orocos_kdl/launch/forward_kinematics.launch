@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find youbot_description)/robots/youbot_arm_only.urdf.xacro" />
+
+  <!-- <rosparam command="load" ns="arm_1" file="$(find mir_hardware_config)/$(arg robot)/config/arm.yaml"/> -->
+
+  <!-- start robot_state_publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
+
+  <!-- joint state publisher -->
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" />
+
+  <!-- load joint angles from yaml -->
+  <rosparam command="load" file="$(find youbot_orocos_kdl)/config/joint_angles.yaml" />
+
+  <!-- start the forward kinematics node -->
+  <node pkg="youbot_orocos_kdl" type="forward_kinematics" name="forward_kinematics" output="screen" />
+
+</launch>
