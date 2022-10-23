@@ -3,35 +3,30 @@
 ForwardKinematics::ForwardKinematics(ros::NodeHandle nh):
     nh_(nh)
 {
-    // get urdf from parameter server
-    nh_.param("robot_description", robot_desc_string, std::string());
-
     // initialize joint state publisher
-    joint_state_pub = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
+    joint_state_pub = nh_.advertise<sensor_msgs::JointState>("/joint_states", 1);
 
     // initialize cartesian pose publisher
-    cartesian_pose_pub = nh_.advertise<geometry_msgs::PointStamped>("cartesian_point", 1);
+    cartesian_position_pub = nh_.advertise<geometry_msgs::PointStamped>("cartesian_point", 1);
 
-    // create string publisher
-    string_pub = nh_.advertise<std_msgs::String>("string", 1);
+    // wait for 1 second to make sure the publishers are ready
+    ROS_INFO("Waiting for 1 second to make sure the publishers are ready...");
+    ros::Duration(1.0).sleep();
 
-    // create a tree from the urdf
-    treeFromUrdf();
+    nh_.getParam("joint_names", joint_names);
 
-    // get chain from base to tip
-    urdf_tree.getChain("arm_link_0", "arm_link_5", urdf_chain);
+    nh_.getParam("joint_angles/default", joint_angles_default);
 
-    // create a tree from DH parameters
-    chainFromDHParams();
-
-    // get chain from base to tip
-    // my_tree.getChain("arm_link_0", "arm_link_5", my_chain);
+    // publish initial joint state with all joints at 0
+    ROS_INFO("Publishing initial joint state");
+    publishJointAngles(joint_angles_default);
+    ros::Duration(1.0).sleep();
 
     // read 5 sets of joint angles from parameter server
     for (int i = 0; i < 5; i++)
     {
         std::vector<double> joint_angles;
-        std::string joint_angles_string = "/forward_kinematics/joint_angles/set" + boost::lexical_cast<std::string>(i);
+        std::string joint_angles_string = "joint_angles/set" + boost::lexical_cast<std::string>(i);
         if (nh_.hasParam(joint_angles_string))
         {
             nh_.getParam(joint_angles_string, joint_angles);
@@ -43,42 +38,79 @@ ForwardKinematics::ForwardKinematics(ros::NodeHandle nh):
         }
     }
 
-    // calculate cartesian pose for each joint angle vector
-    ROS_INFO("Calculating cartesian pose with urdf chain");
+    // create a tree from the urdf
+    if (treeFromUrdf())
+    {
+        // create a chain between specified links
+        nh_.getParam("chain_links", chain_links);
+        urdf_tree.getChain(chain_links[0], chain_links[1], urdf_chain);
 
-    // wait for 1 second to make sure the publishers are ready
-    ros::Duration(4.0).sleep();
-    jointAnglesToCartesianPose(urdf_chain);
+        // calculate cartesian pose for each joint angle vector
+        ROS_INFO("Calculating cartesian pose with urdf chain");
+        jointAnglesToCartesianPose(urdf_chain);
+    }
 
-    // ROS_INFO("Calculating cartesian pose with DH chain");
-    // jointAnglesToCartesianPose(my_chain);
+    // create a tree from DH parameters
+    chainFromDHParams();
+
+    ROS_INFO("Calculating cartesian pose with DH chain");
+    jointAnglesToCartesianPose(my_chain);
+
+    ROS_INFO("All operations completed, press Ctrl+C to exit.");
 }
 
 ForwardKinematics::~ForwardKinematics()
 {
 }
 
-void ForwardKinematics::treeFromUrdf()
+bool ForwardKinematics::treeFromUrdf()
 {
     // get urdf from parameter server
-    nh_.param("robot_description", robot_desc_string, std::string());
+    if (nh_.getParam("/robot_description", robot_desc_string))
+    {
+        ROS_INFO("Successfully got robot_description from parameter server");
 
-    // parse urdf
-    if (!kdl_parser::treeFromString(robot_desc_string, urdf_tree)){
-        ROS_ERROR("Failed to construct kdl tree");
+        // parse urdf from robot_description string
+        if (!kdl_parser::treeFromString(robot_desc_string, urdf_tree)){
+            ROS_ERROR("Failed to construct kdl tree");
+            return (false);
+        }
+        else
+        {
+            ROS_INFO("Successfully constructed kdl tree");
+            return (true);
+        }
+    }
+    else
+    {
+        ROS_ERROR("Failed to get robot_description from parameter server");
+        return (false);
     }
 }
 
 void ForwardKinematics::chainFromDHParams()
 {
-    // add segments to the chain using DH parameters
-    my_chain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), KDL::Frame::DH(0.0, 0.0, 0.0, 0.0)));
-    my_chain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), KDL::Frame::DH(0.0, 0.0, 0.0, 0.0)));
-    my_chain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), KDL::Frame::DH(0.0, 0.0, 0.0, 0.0)));
-    my_chain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), KDL::Frame::DH(0.0, 0.0, 0.0, 0.0)));
-    my_chain.addSegment(KDL::Segment(KDL::Joint(KDL::Joint::RotZ), KDL::Frame::DH(0.0, 0.0, 0.0, 0.0)));
+    // get number of joints from parameter server
+    int num_joints;
+    nh_.getParam("dh_params/num_joints", num_joints);
+    // add segments to the chain using DH parameters from parameter server for each joint
+    for (int i = 1; i < num_joints+1; i++)
+    {
+        std::string joint_name = "arm_joint_" + boost::lexical_cast<std::string>(i);
+        std::string joint_dh_string = "dh_params/" + joint_name;
+        std::vector<double> joint_dh_params;
+        if (nh_.hasParam(joint_dh_string))
+        {
+            nh_.getParam(joint_dh_string, joint_dh_params);
+            my_chain.addSegment(KDL::Segment(joint_name, KDL::Joint(joint_name, KDL::Joint::RotZ), 
+                                KDL::Frame::DH(joint_dh_params[0], joint_dh_params[1], joint_dh_params[2], joint_dh_params[3])));
+        }
+        else 
+        {
+            ROS_ERROR("No DH parameters found for joint %s", joint_name.c_str());
+        }
+    }
 }
-
 
 void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
 {
@@ -89,7 +121,7 @@ void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
     for (int i = 0; i < joint_angles_vector.size(); i++)
     {
         // publish joint angles to joint_states topic
-        // publishJointAngles(joint_angles_vector[i]);
+        publishJointAngles(joint_angles_vector[i]);
 
         // create joint array
         unsigned int nj = chain.getNrOfJoints();
@@ -123,10 +155,10 @@ void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
         double z = ee_frame.p.z();
 
         // print pose
-        ROS_INFO("Pose: x: %f, y: %f, z: %f", x, y, z);
+        ROS_INFO("Calculated Pose: x: %f, y: %f, z: %f", x, y, z);
 
         // publish pose to rviz
-        publishPose(x, y, z);
+        publishPosition(x, y, z);
     }
 }
 
@@ -135,25 +167,19 @@ void ForwardKinematics::publishJointAngles(std::vector<double> joint_angles)
     // create joint state message
     sensor_msgs::JointState joint_state_msg;
 
+    joint_state_msg.header.stamp = ros::Time::now();
+
     // assign joint names
-    joint_state_msg.name.push_back("arm_joint_1");
-    joint_state_msg.name.push_back("arm_joint_2");
-    joint_state_msg.name.push_back("arm_joint_3");
-    joint_state_msg.name.push_back("arm_joint_4");
-    joint_state_msg.name.push_back("arm_joint_5");
+    joint_state_msg.name = joint_names;
 
     // assign joint angles
-    joint_state_msg.position.push_back(joint_angles[0]);
-    joint_state_msg.position.push_back(joint_angles[1]);
-    joint_state_msg.position.push_back(joint_angles[2]);
-    joint_state_msg.position.push_back(joint_angles[3]);
-    joint_state_msg.position.push_back(joint_angles[4]);
+    joint_state_msg.position = joint_angles;
 
     // publish joint state message
     joint_state_pub.publish(joint_state_msg);
 }
 
-void ForwardKinematics::publishPose(double x, double y, double z)
+void ForwardKinematics::publishPosition(double x, double y, double z)
 {
     // create point stamped message
     geometry_msgs::PointStamped point_msg;
@@ -164,19 +190,22 @@ void ForwardKinematics::publishPose(double x, double y, double z)
     point_msg.point.z = z;
 
     // publish pose message
-    cartesian_pose_pub.publish(point_msg);
-    // wait for 1 second
-    ros::Duration(1.0).sleep();
+    cartesian_position_pub.publish(point_msg);
+    // wait for 2 seconds to visualize pose in rviz
+    ros::Duration(2.0).sleep();
 }
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "forward_kinematics");
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~");
 
     ForwardKinematics fk(nh);
     
-    ros::spin();
+    while (ros::ok())
+    {
+        ros::spinOnce();
+    }
 
     return 0;
 }
