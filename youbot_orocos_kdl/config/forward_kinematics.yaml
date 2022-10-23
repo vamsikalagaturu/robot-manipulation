@@ -1,0 +1,19 @@
+# define 5 sets of joint angles for the youbot arm
+
+forward_kinematics:
+  joint_names: ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4', 'arm_joint_5']
+  chain_links: ['arm_link_0', 'arm_link_5'] # links between which the forward kinematics is computed
+  joint_angles:
+    default: [0.0, 0.0, 0.0, 0.0, 0.0]
+    set0: [1.0, 0.5, -1.0, 0.5, 1.0]
+    set1: [2.0, 1.0, -2.0, 1.0, 2.0]
+    set2: [3.0, 1.0, -3.0, 1.5, 3.0]
+    set3: [4.0, 2.0, -4.0, 2.0, 4.0]
+    set4: [5.0, 2.0, -5.0, 3.0, 5.0]
+  dh_params: # a, alpha, d, theta for each link
+    num_joints: 5
+    arm_joint_1: [0.033, -1.57079632679, 0.147, 0.0]
+    arm_joint_2: [0.155, 0.0, 0.000, 0.0]
+    arm_joint_3: [0.135, 0.0, 0.000, 0.0]
+    arm_joint_4: [0.000, -1.57079632679, 0.000, 0.0]
+    arm_joint_5: [0.000, 0.0, 0.2175, 0.0]

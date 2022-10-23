@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- specify the path for robot urdf -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find youbot_description)/robots/youbot_arm_only.urdf.xacro" />
+
+  <!-- start robot_state_publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" />
+
+  <!-- load joint angles from yaml -->
+  <rosparam command="load" file="$(find youbot_orocos_kdl)/config/forward_kinematics.yaml" />
+
+  <!-- start rviz with config -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find youbot_orocos_kdl)/config/fk.rviz" />
+
+  <!-- start the forward kinematics node -->
+  <node pkg="youbot_orocos_kdl" type="forward_kinematics" name="forward_kinematics" output="screen" />
+
+</launch>
