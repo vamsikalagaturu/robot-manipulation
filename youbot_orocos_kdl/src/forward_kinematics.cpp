@@ -23,7 +23,9 @@ ForwardKinematics::ForwardKinematics(ros::NodeHandle nh):
     ros::Duration(1.0).sleep();
 
     // read 5 sets of joint angles from parameter server
-    for (int i = 0; i < 5; i++)
+    int num_test_sets;
+    nh_.getParam("joint_angles/num_sets", num_test_sets);
+    for (int i = 0; i < num_test_sets; i++)
     {
         std::vector<double> joint_angles;
         std::string joint_angles_string = "joint_angles/set" + boost::lexical_cast<std::string>(i);

@@ -54,7 +54,7 @@ public:
     KDL::Chain my_chain;
 
     // double vector of multiple joint angles
-    std::vector<std::vector<double> > joint_angles_vector;
+    std::vector<std::vector<double>> joint_angles_vector;
 
     // joint names
     std::vector<std::string> joint_names;

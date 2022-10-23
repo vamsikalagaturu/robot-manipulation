@@ -5,6 +5,7 @@ forward_kinematics:
   chain_links: ['arm_link_0', 'arm_link_5'] # links between which the forward kinematics is computed
   joint_angles:
     default: [0.0, 0.0, 0.0, 0.0, 0.0]
+    num_sets: 5
     set0: [1.0, 0.5, -1.0, 0.5, 1.0]
     set1: [2.0, 1.0, -2.0, 1.0, 2.0]
     set2: [3.0, 1.0, -3.0, 1.5, 3.0]
