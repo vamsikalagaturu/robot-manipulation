@@ -59,7 +59,7 @@ roslaunch youbot_orocos_kdl forward_kinematics.launch
     - The remaining are the test sets for the forward kinematics which are defined within the limits of Youbot.
 
 3. DH Parameters
-    - The DH parameters are defined in the `dh_params` parameter. The `dh_params` parameter takes a list of DH parameters as input for each joint defined in `joint_names`.
+    - The `dh_params` parameter takes a list of DH parameters as input for each joint defined in `joint_names`.
     - Each joint has 4 DH parameters in the order: `JointType, a, alpha, d, theta`.
     - The `JointType` can be any one of the below enum and has to be given as a respective integer.
         ```cpp
