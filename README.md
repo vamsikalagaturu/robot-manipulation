@@ -41,6 +41,11 @@ source devel/setup.bash
 roslaunch youbot_orocos_kdl forward_kinematics.launch
 ```
 
+- The script checks if URDF is available and if so, it will create a chain based on the links defined in the config.
+- Based on the chain created from URDF, it will run FK on the defined set of joint angles.
+- Then, the script will create a chain based on DH parameters and run the FK on the defined set of angles.
+- The respective joint angles and the calculated position are visualized in RVIZ.
+
 ### Configuration
 
 - The configuration for the forward kinematics is defined in the `config/forward_kinematics.yaml` file.
