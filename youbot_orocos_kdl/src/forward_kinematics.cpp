@@ -10,8 +10,8 @@ ForwardKinematics::ForwardKinematics(ros::NodeHandle nh):
     cartesian_position_pub = nh_.advertise<geometry_msgs::PointStamped>("cartesian_point", 1);
 
     // wait for 1 second to make sure the publishers are ready
-    ROS_INFO("Waiting for 1 second to make sure the publishers are ready...");
-    ros::Duration(1.0).sleep();
+    ROS_INFO("Waiting for 3 seconds to make sure the publishers and rviz are ready...");
+    ros::Duration(3.0).sleep();
 
     nh_.getParam("joint_names", joint_names);
 
@@ -57,6 +57,8 @@ ForwardKinematics::ForwardKinematics(ros::NodeHandle nh):
 
     ROS_INFO("Calculating cartesian pose with DH chain");
     jointAnglesToCartesianPose(my_chain);
+
+    // TODO: Use gui to change joint angles
 
     ROS_INFO("All operations completed, press Ctrl+C to exit.");
 }
@@ -104,8 +106,8 @@ void ForwardKinematics::chainFromDHParams()
         if (nh_.hasParam(joint_dh_string))
         {
             nh_.getParam(joint_dh_string, joint_dh_params);
-            my_chain.addSegment(KDL::Segment(joint_name, KDL::Joint(joint_name, KDL::Joint::RotZ), 
-                                KDL::Frame::DH(joint_dh_params[0], joint_dh_params[1], joint_dh_params[2], joint_dh_params[3])));
+            my_chain.addSegment(KDL::Segment(joint_name, KDL::Joint(joint_name, KDL::Joint::JointType(joint_dh_params[0])), 
+                                KDL::Frame::DH(joint_dh_params[1], joint_dh_params[2], joint_dh_params[3], joint_dh_params[4])));
         }
         else 
         {

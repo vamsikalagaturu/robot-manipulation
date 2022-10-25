@@ -44,7 +44,7 @@ roslaunch youbot_orocos_kdl forward_kinematics.launch
 - The configuration for the forward kinematics is defined in the `config/forward_kinematics.yaml` file.
 
 1. Chain links
-    - The chain links are defined in the `chain_links` parameter. The `chain_links` parameter takes two strings as input. The `KDL::Chain` is created between the first and second link based on the URDF file.
+    - The `chain_links` parameter takes two strings as input. The `KDL::Chain` is created between the first and second link based on the URDF file.
 
 2. Joint angles
     - The `joint_angles` parameter takes a list of joint angles as input for each joint defined in the `joint_names`. The joint angles are in radians.
@@ -53,7 +53,11 @@ roslaunch youbot_orocos_kdl forward_kinematics.launch
 
 3. DH Parameters
     - The DH parameters are defined in the `dh_params` parameter. The `dh_params` parameter takes a list of DH parameters as input for each joint defined in `joint_names`.
-    - Each joint has 4 DH parameters in the order: `a, alpha, d, theta`.
+    - Each joint has 4 DH parameters in the order: `JointType, a, alpha, d, theta`.
+    - The `JointType` can be any one of the below enum and has to be given as a respective integer.
+        ```cpp
+        JointType enum {RotAxis(=0), RotX(=1), RotY(=2), RotZ(=3), TransAxis(=4), TransX(=5), TransY(=6), TransZ(=7), None(=8)};
+        ```
 
 4. Arm limits
 

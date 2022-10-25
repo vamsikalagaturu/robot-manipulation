@@ -11,10 +11,11 @@ forward_kinematics:
     set2: [3.0, 1.0, -3.0, 1.5, 3.0]
     set3: [4.0, 2.0, -4.0, 2.0, 4.0]
     set4: [5.0, 2.0, -5.0, 3.0, 5.0]
-  dh_params: # a, alpha, d, theta for each link
+  dh_params: # JointType, a, alpha(radians), d, theta for each link
     num_joints: 5
-    arm_joint_1: [0.033, -1.57079632679, 0.147, 0.0]
-    arm_joint_2: [0.155, 0.0, 0.000, 0.0]
-    arm_joint_3: [0.135, 0.0, 0.000, 0.0]
-    arm_joint_4: [0.000, -1.57079632679, 0.000, 0.0]
-    arm_joint_5: [0.000, 0.0, 0.2175, 0.0]
+    # enum {RotAxis(=0),RotX,RotY,RotZ,TransAxis,TransX,TransY,TransZ,None(=8)} JointType;
+    arm_joint_1: [3, 0.033, -1.57079632679, 0.147, 0.0]
+    arm_joint_2: [3, 0.155, 0.0, 0.000, 0.0]
+    arm_joint_3: [3, 0.135, 0.0, 0.000, 0.0]
+    arm_joint_4: [3, 0.000, -1.57079632679, 0.000, 0.0]
+    arm_joint_5: [3, 0.000, 0.0, 0.2175, 0.0]
