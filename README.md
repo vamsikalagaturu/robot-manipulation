@@ -28,12 +28,14 @@ git clone -b develop --recurse-submodules -j8 https://github.com/vamsikalagaturu
 
 3. Build the workspace
 ```bash
+cd ~/rm_ws/
 source /opt/ros/noetic/setup.bash
 catkin build
 ```
 
 4. Run the launch file
 ```bash
+cd ~/rm_ws
 source devel/setup.bash
 
 roslaunch youbot_orocos_kdl forward_kinematics.launch
