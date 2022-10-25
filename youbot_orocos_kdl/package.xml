@@ -4,9 +4,9 @@
   <version>0.0.0</version>
   <description>The youbot_orocos_kdl package</description>
 
-  <maintainer email="vamsi@todo.todo">vamsi</maintainer>
+  <maintainer email="vamsikalagaturu@gmail.com">vamsi</maintainer>
   <license>TODO</license>
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author email="vamsikalagaturu@gmail.com">vamsi</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
