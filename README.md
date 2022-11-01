@@ -60,11 +60,10 @@ roslaunch youbot_orocos_kdl forward_kinematics.launch
 
 3. DH Parameters
     - The `dh_params` parameter takes a list of DH parameters as input for each joint defined in `joint_names`.
-    - Each joint has 4 DH parameters in the order: `JointType, a, alpha, d, theta`.
-    - The `JointType` can be any one of the below enum and has to be given as a respective integer.
-        ```cpp
-        JointType enum {RotAxis(=0), RotX(=1), RotY(=2), RotZ(=3), TransAxis(=4), TransX(=5), TransY(=6), TransZ(=7), None(=8)};
-        ```
+    - Each joint has 3 fields:
+        - type: RotAxis(=0), TransAxis(=4), None(=8)
+        - axis: [x, y, z]
+        - dh: DH parameters in the order: `a, alpha (radians), d, theta (radians)`.
 
 4. Arm limits
 
