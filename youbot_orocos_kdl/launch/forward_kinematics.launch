@@ -13,6 +13,6 @@
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find youbot_orocos_kdl)/config/fk.rviz" />
 
   <!-- start the forward kinematics node -->
-  <node pkg="youbot_orocos_kdl" type="forward_kinematics" name="forward_kinematics" output="screen" />
+  <node pkg="youbot_orocos_kdl" type="forward_kinematics" name="forward_kinematics" output="screen"/>
 
 </launch>

@@ -105,9 +105,24 @@ void ForwardKinematics::chainFromDHParams()
         std::vector<double> joint_dh_params;
         if (nh_.hasParam(joint_dh_string))
         {
-            nh_.getParam(joint_dh_string, joint_dh_params);
-            my_chain.addSegment(KDL::Segment(joint_name, KDL::Joint(joint_name, KDL::Joint::JointType(joint_dh_params[0])), 
-                                KDL::Frame::DH(joint_dh_params[1], joint_dh_params[2], joint_dh_params[3], joint_dh_params[4])));
+            // get dictionary of DH parameters for this joint
+            XmlRpc::XmlRpcValue joint_dh_dict;
+            nh_.getParam(joint_dh_string, joint_dh_dict);
+            // get joint type as int from dictionary
+            int joint_type = (int)joint_dh_dict["joint_type"];
+            // get joint axis array from dictionary
+            XmlRpc::XmlRpcValue joint_axis_array = joint_dh_dict["axis"];
+            // get dh parameters array from dictionary
+            XmlRpc::XmlRpcValue joint_dh_array = joint_dh_dict["dh"];
+            // create a joint object from the joint type and joint axis as int
+            KDL::Joint joint = KDL::Joint(KDL::Vector(0,0,0), KDL::Vector(
+                                static_cast<int>(joint_axis_array[0]),
+                                static_cast<int>(joint_axis_array[1]),
+                                static_cast<int>(joint_axis_array[2])), KDL::Joint::JointType(joint_type));
+            // create a segment object from the joint and dh parameters
+            my_chain.addSegment(KDL::Segment(joint_name, joint, 
+                                KDL::Frame::DH_Craig1989(static_cast<double>(joint_dh_array[0]), static_cast<double>(joint_dh_array[1]),
+                                                         static_cast<double>(joint_dh_array[2]), static_cast<double>(joint_dh_array[3]))));
         }
         else 
         {
@@ -130,6 +145,8 @@ void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
         // create joint array
         unsigned int nj = chain.getNrOfJoints();
         KDL::JntArray jointpositions = KDL::JntArray(nj);
+        // print nj
+        ROS_INFO("Number of joints: %d", nj);
 
         // assign joint angles to joint array
         for (int j = 0; j < nj; j++)
@@ -143,6 +160,7 @@ void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
         // calculate forward kinematics
         bool kinematics_status;
         kinematics_status = fksolver.JntToCart(jointpositions, ee_frame);
+
         if(kinematics_status>=0){
             ROS_INFO("FK for joint angles %f, %f, %f, %f, %f", joint_angles_vector[i][0], 
                                                                 joint_angles_vector[i][1], 
@@ -153,13 +171,26 @@ void ForwardKinematics::jointAnglesToCartesianPose(KDL::Chain &chain)
             ROS_INFO("Error: could not calculate forward kinematics :(");
         }
 
-        // extract pose from frame
+        // extract position from frame
         double x = ee_frame.p.x();
         double y = ee_frame.p.y();
         double z = ee_frame.p.z();
 
-        // print pose
-        ROS_INFO("Calculated Pose: x: %f, y: %f, z: %f", x, y, z);
+        // Print the frame
+        std::cout << "End-Effector frame\n";
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 4; j++) {
+                double a = ee_frame(i, j);
+                if (a < 0.001 && a > -0.001) {
+                    a = 0.0;
+                }
+                std::cout << a << "\t";
+            }
+            std::cout << std::endl;
+        }
+
+        // print position
+        ROS_INFO("Calculated Position: x: %f, y: %f, z: %f", x, y, z);
 
         // publish pose to rviz
         publishPosition(x, y, z);
